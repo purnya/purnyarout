@@ -15,7 +15,7 @@ app.get('/', function(req, res) {
 });
 
 // GET /todos?completed=false&q=work
-app.get('/todos', function(req, res) {
+/*app.get('/todos', function(req, res) {
 	var queryParams = req.query;
 	var filteredTodos = todos;
 
@@ -36,6 +36,30 @@ app.get('/todos', function(req, res) {
 	}
 
 	res.json(filteredTodos);
+});*/
+
+// GET  from DB
+app.get('/todos', function(req, res) {
+	var query = req.query;
+	var where = {};
+
+	if (query.hasOwnProperty('completed') && query.completed === 'true') {
+		where.completed = true;
+	} else if (query.hasOwnProperty('completed') && query.completed === 'false') {
+		where.completed = false;
+	}
+
+	if (query.hasOwnProperty('q') && query.q.length > 0) {
+		where.description = {
+			$like: '%' + query.q + '%'
+		};
+	}
+
+	db.todo.findAll({where: where}).then(function (todos) {
+		res.json(todos);
+	}, function (e) {
+		res.status(500).send();
+	});
 });
 
 // GET /todos/:id
@@ -51,7 +75,7 @@ app.get('/todos', function(req, res) {
 		res.status(404).send();
 	}
 });*/
-
+ // Get data from DB 
 app.get('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
 
@@ -93,6 +117,7 @@ app.post('/todos', function(req, res) {
 	// res.json(body);
 });
 
+
 // DELETE /todos/:id
 app.delete('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
@@ -109,6 +134,7 @@ app.delete('/todos/:id', function(req, res) {
 		res.json(matchedTodo);
 	}
 });
+
 
 // PUT /todos/:id
 app.put('/todos/:id', function(req, res) {
